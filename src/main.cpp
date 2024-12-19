@@ -2,33 +2,81 @@
 // Includes
 **************************************************************************************************/
 #include <Arduino.h>
+#include "esp_system.h"
 #include <driver/temp_sensor.h>
 
-/**************************************************************************************************
-// Variables
-**************************************************************************************************/
-uint32_t SERIAL_BAUDRATE = 115200;
-uint32_t DELYAY = 1000;
+// #include <micro_ros_platformio.h>
+#include <rmw_microros/rmw_microros.h>
+#include <rcl/rcl.h>
+#include <rclc/rclc.h>
+#include <rclc/executor.h>
+
+#include <std_msgs/msg/float32.h>
+
+
+rcl_publisher_t temperaturePublisher;
+std_msgs__msg__Float32 temperatureMessage;
+
+rclc_executor_t executor;
+rclc_support_t support;
+rcl_allocator_t allocator;
+rcl_node_t node;
+rcl_timer_t timer;
 
 /**************************************************************************************************
- * @brief Setup function
+// Private constants
+**************************************************************************************************/
+static const uint32_t SERIAL_BAUDRATE = 115200;
+static const uint32_t DELYAY_MS = 1000;
+static const char NODE_NAME[] = "temp_esp32_c3";
+
+// void timerCallBack(rcl_timer_t *timer, int64_t lastCallTime) {
+//   RCLC_UNUSED(lastCallTime);
+
+//   temperatureMessage.data = temperatureRead();
+//   rcl_publish(&temperaturePublisher, &temperatureMessage, NULL);
+// }
+
+/**************************************************************************************************
+ * @brief This function is automatically called once when the program starts.
+          It configures the serial port with the specified baud rate.
  * @return Nothing
- * This function is automatically called once when the program starts.
- * It configures the serial port with the specified baud rate.
  *************************************************************************************************/
 void setup() {
+  // Config serial transport
   Serial.begin(SERIAL_BAUDRATE);
-  Serial.println("Hello, ESP32-C3 with Arduino and ESP-IDF!\r\n");
+  set_microros_serial_transports(Serial);
+  delay(DELYAY_MS);
+
+  allocator = rcl_get_default_allocator();
+  // TODO: Fix atomic error
+  rclc_support_init(&support, 0, NULL, &allocator);
+
+  // // Create node
+  // rclc_node_init_default(&node, NODE_NAME, "", &support);
+  // // Create publisher
+  // rclc_publisher_init_default(
+  //   &temperaturePublisher,
+  //   &node,
+  //   ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float32),
+  //   NODE_NAME);
+  // // Create timer
+  // const unsigned int timerTimeOut = 1000;
+  // rclc_timer_init_default(
+  //   &timer,
+  //   &support,
+  //   RCL_MS_TO_NS(timerTimeOut),
+  //   timerCallBack);
+  // // Create executor
+  // rclc_executor_init(&executor, &support.context, 1, &allocator);
+  // rclc_executor_add_timer(&executor, &timer);
 }
 
 /**************************************************************************************************
- * @brief Loop function
+ * @brief This function is called repeatedly after setup()
  * @return Nothing
- * This function is called repeatedly after setup()
  *************************************************************************************************/
 void loop() {
-  float temperature = temperatureRead(); 
-  Serial.printf("temp:%.2f\r\n", temperature);
-  delay(DELYAY);
+  delay(DELYAY_MS);
+  // rclc_executor_spin_some(&executor, RCL_MS_TO_NS(DELYAY_MS));
 }
-
