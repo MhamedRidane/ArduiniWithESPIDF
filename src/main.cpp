@@ -1,8 +1,9 @@
 /**************************************************************************************************
 // Includes
 **************************************************************************************************/
+#include <stdint.h>
 #include <Arduino.h>
-#include <driver/temp_sensor.h>
+// #include <driver/temp_sensor.h>
 
 #include <micro_ros_platformio.h>
 #include <rcl/rcl.h>
@@ -11,6 +12,22 @@
 
 #include <std_msgs/msg/float32.h>
 
+// Wrapped atomic functions
+uint64_t __wrap___atomic_load_8(const volatile void *ptr) {
+    return __atomic_load_n((const volatile uint64_t*)ptr, __ATOMIC_SEQ_CST);
+}
+
+uint64_t __wrap___atomic_exchange_8(volatile void *ptr, uint64_t val) {
+    return __atomic_exchange_n((volatile uint64_t*)ptr, val, __ATOMIC_SEQ_CST);
+}
+
+uint64_t __wrap___atomic_fetch_add_8(volatile void *ptr, uint64_t val) {
+    return __atomic_fetch_add((volatile uint64_t*)ptr, val, __ATOMIC_SEQ_CST);
+}
+
+void __wrap___atomic_store_8(volatile void *ptr, uint64_t val) {
+    __atomic_store_n((volatile uint64_t*)ptr, val, __ATOMIC_SEQ_CST);
+}
 
 rcl_publisher_t temperaturePublisher;
 std_msgs__msg__Float32 temperatureMessage;
